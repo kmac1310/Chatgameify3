@@ -1,92 +1,35 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>1440TIME™ App</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <div id="app">
-    <h1>1440TIME™ App</h1>
-    <pre id="output">Loading...</pre>
-  </div>
+// ✅ Fixed Time Expenses (one-tap log)
+const fixedTimePresets = [
+  { label: '+60 Eating / Cooking', minutes: null, description: 'Eating / Cooking', category: 'PT' },
+  { label: '+45 Home Maintenance', minutes: null, description: 'Home Maintenance', category: 'PT' },
+  { label: '+60 Kids / Family Care', minutes: null, description: 'Kids / Family Care', category: 'PT' },
+  { label: '+60 TV / Social Media', minutes: null, description: 'TV / Social Media', category: 'PT' },
+  { label: '+30 Money / Bills', minutes: null, description: 'Money / Bills', category: 'PT' },
+  { label: '+60 Fun Time / Hangout', minutes: null, description: 'Fun Time / Hangout', category: 'PT' }
+];
 
-  <script src="app.js"></script>
-</body>
-</html>
-body {
-  font-family: monospace;
-  background: #000;
-  color: #00ffcc;
-  padding: 20px;
-}
-h1 {
-  font-size: 24px;
-  color: #fff;
-}
-pre {
-  background-color: #111;
-  padding: 15px;
-  border-radius: 10px;
-}
-// 1440TIME™ App Blueprint
+// 👇 Add these below your existing quickAdd buttons in the React component:
+{fixedTimePresets.map((item, index) => (
+  <button
+    key={index}
+    className="px-3 py-2 bg-zinc-800 rounded-md hover:bg-zinc-700 text-sm"
+    onClick={() => {
+      setMinutes('');
+      setCategory(item.category);
+      setDescription(item.description);
+    }}
+  >
+    {item.label}
+  </button>
+))}
 
-const user = {
-  dailyTokens: 1440,
-  sleepHours: 7,
-  workHours: 8,
-  weeklyWorkDays: 5,
-  yearlyWeeks: 50,
-  hourlyWage: 35,
-  aiToolsEnabled: true,
-  vaultActivities: ['Write Book', 'Workout'],
-  maintenanceTasks: ['Shower', 'Eat', 'Drive'],
-  leisure: ['Netflix', 'Scroll']
-};
+// ✅ Rename the old "Big Rocks (one-tap adds)" header to:
+// "Fixed Time Expenses (one-tap log)"
+<h2 className="text-xl font-bold mb-2">Fixed Time Expenses (one-tap log)</h2>
 
-function calculateZones(user) {
-  const sleepTokens = user.sleepHours * 60;
-  const livelihoodTokens = user.workHours * 60;
-  const onTimeTokens = user.dailyTokens - sleepTokens - livelihoodTokens;
-  const valuePerWorkMinute = (user.hourlyWage / 60).toFixed(2);
+// 🧠 Notes:
+// - Leave user input optional under the buttons.
+// - These don’t assign default minutes — user adds that themselves.
+// - Category is pre-selected as PT for these.
 
-  return {
-    sleep: sleepTokens,
-    livelihood: livelihoodTokens,
-    onTime: onTimeTokens,
-    valuePerMinute: `$${valuePerWorkMinute}`
-  };
-}
-
-function categorizeOnTimeTokens(user) {
-  const vaultPTP = user.vaultActivities.length * 3;
-  const aiBoost = user.aiToolsEnabled ? vaultPTP * 10 : 0;
-  const maintenance = user.maintenanceTasks.length;
-  const leisure = user.leisure.length * -1;
-
-  return { vaultPTP, aiBoost, maintenance, leisure };
-}
-
-function dashboard(user) {
-  const zones = calculateZones(user);
-  const tokenCategories = categorizeOnTimeTokens(user);
-  let output = '';
-
-  output += `🧙‍♂️ Welcome to 1440TIME™\n\n`;
-  output += `💤 Sleep Zone: ${zones.sleep} tokens\n`;
-  output += `💼 Livelihood Zone: ${zones.livelihood} tokens at ${zones.valuePerMinute}/min\n`;
-  output += `🧠 On-Time Zone: ${zones.onTime} tokens\n`;
-  output += `\n🔐 Vault/Goals (PTP): ${tokenCategories.vaultPTP} tokens`;
-  output += `\n🤖 1440X Boost (AI-enhanced): ${tokenCategories.aiBoost} tokens`;
-  output += `\n🛠️ Maintenance: ${tokenCategories.maintenance} tokens`;
-  output += `\n📺 Leisure: ${tokenCategories.leisure} tokens`;
-
-  const totalUtilized = tokenCategories.vaultPTP + tokenCategories.aiBoost + tokenCategories.maintenance + tokenCategories.leisure;
-  const remaining = zones.onTime - totalUtilized;
-
-  output += `\n\n💡 Remaining Tokens Today: ${remaining} (Spend them wisely!)`;
-
-  document.getElementById("output").innerText = output;
-}
-
-dashboard(user);
+// ✅ Keeping everything else as-is for now — minimal and clean.
