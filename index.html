@@ -1,97 +1,92 @@
-<!-- 1440TIME™ • On-Time Token Allocator -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>1440TIME™ • On-Time Token Allocator</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" />
-  <style>
-    body {
-      background-color: #121212;
-      color: #f0f0f0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    .token-box {
-      background-color: #1e1e1e;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 20px;
-    }
-    .category-btn {
-      margin: 2px;
-    }
-    .category-badge {
-      font-size: 0.9em;
-      border-radius: 6px;
-      padding: 4px 8px;
-    }
-    .PT { background-color: #2e7d32; color: white; }
-    .PTP { background-color: #00bcd4; color: white; }
-    .Leisure { background-color: #e53935; color: white; }
-    .X1440 { background-color: #9575cd; color: white; }
-    .score-box { margin-top: 10px; }
-    .input-box { margin-top: 15px; }
-  </style>
+  <meta charset="UTF-8">
+  <title>1440TIME™ App</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-<body class="container py-4">
-  <h4><strong>1440TIME™ • On-Time Token Allocator</strong></h4>
-  <p class="text-muted">Start fresh every day. Hours for sleep & work — the rest is On-Time (minutes).</p>
-
-  <!-- Fixed Time Expenses -->
-  <div class="token-box">
-    <h5><strong>Fixed Time Expenses (one-tap log)</strong></h5>
-    <div id="fixedTimeButtons"></div>
-    <p class="text-muted">These are non-negotiables — you decide how many minutes to assign to each manually.</p>
+<body>
+  <div id="app">
+    <h1>1440TIME™ App</h1>
+    <pre id="output">Loading...</pre>
   </div>
 
-  <!-- Manual Entry Section -->
-  <div class="token-box">
-    <div class="input-group input-box">
-      <input type="number" id="minutesInput" class="form-control" placeholder="Minutes (On-Time)" />
-      <select id="categorySelect" class="form-select">
-        <option value="PT">PT — Power Time (x1)</option>
-        <option value="PTP">PTP — Power Time Plus (x3)</option>
-        <option value="X1440">1440X — Multiplier Zone (x10)</option>
-        <option value="Leisure">Leisure — Escape Time (-1)</option>
-      </select>
-    </div>
-    <input type="text" id="descriptionInput" class="form-control mt-2" placeholder="What did you do? (optional)" />
-    <button class="btn btn-success mt-2" onclick="addEntry()">Add Entry</button>
-    <button class="btn btn-secondary mt-2" onclick="clearEntries()">Clear Entries</button>
-  </div>
-
-  <!-- Token Logs and Totals (future implementation) -->
-
-  <script>
-    const fixedTimePresets = [
-      { label: 'Eating / Cooking', description: 'Eating / Cooking', category: 'PT' },
-      { label: 'Home Maintenance', description: 'Home Maintenance', category: 'PT' },
-      { label: 'Kids / Family Care', description: 'Kids / Family Care', category: 'PT' },
-      { label: 'TV / Social Media', description: 'TV / Social Media', category: 'PT' },
-      { label: 'Money / Bills', description: 'Money / Bills', category: 'PT' },
-      { label: 'Fun Time / Hangout', description: 'Fun Time / Hangout', category: 'PT' },
-    ];
-
-    const buttonContainer = document.getElementById('fixedTimeButtons');
-    fixedTimePresets.forEach(item => {
-      const btn = document.createElement('button');
-      btn.className = 'btn btn-outline-light category-btn';
-      btn.textContent = item.label;
-      btn.onclick = () => {
-        document.getElementById('descriptionInput').value = item.description;
-        document.getElementById('categorySelect').value = item.category;
-        document.getElementById('minutesInput').focus();
-      };
-      buttonContainer.appendChild(btn);
-    });
-
-    function addEntry() {
-      // Entry logic here (add tokens, update score, etc.)
-    }
-    function clearEntries() {
-      // Clear logic here
-    }
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
+body {
+  font-family: monospace;
+  background: #000;
+  color: #00ffcc;
+  padding: 20px;
+}
+h1 {
+  font-size: 24px;
+  color: #fff;
+}
+pre {
+  background-color: #111;
+  padding: 15px;
+  border-radius: 10px;
+}
+// 1440TIME™ App Blueprint
+
+const user = {
+  dailyTokens: 1440,
+  sleepHours: 7,
+  workHours: 8,
+  weeklyWorkDays: 5,
+  yearlyWeeks: 50,
+  hourlyWage: 35,
+  aiToolsEnabled: true,
+  vaultActivities: ['Write Book', 'Workout'],
+  maintenanceTasks: ['Shower', 'Eat', 'Drive'],
+  leisure: ['Netflix', 'Scroll']
+};
+
+function calculateZones(user) {
+  const sleepTokens = user.sleepHours * 60;
+  const livelihoodTokens = user.workHours * 60;
+  const onTimeTokens = user.dailyTokens - sleepTokens - livelihoodTokens;
+  const valuePerWorkMinute = (user.hourlyWage / 60).toFixed(2);
+
+  return {
+    sleep: sleepTokens,
+    livelihood: livelihoodTokens,
+    onTime: onTimeTokens,
+    valuePerMinute: `$${valuePerWorkMinute}`
+  };
+}
+
+function categorizeOnTimeTokens(user) {
+  const vaultPTP = user.vaultActivities.length * 3;
+  const aiBoost = user.aiToolsEnabled ? vaultPTP * 10 : 0;
+  const maintenance = user.maintenanceTasks.length;
+  const leisure = user.leisure.length * -1;
+
+  return { vaultPTP, aiBoost, maintenance, leisure };
+}
+
+function dashboard(user) {
+  const zones = calculateZones(user);
+  const tokenCategories = categorizeOnTimeTokens(user);
+  let output = '';
+
+  output += `🧙‍♂️ Welcome to 1440TIME™\n\n`;
+  output += `💤 Sleep Zone: ${zones.sleep} tokens\n`;
+  output += `💼 Livelihood Zone: ${zones.livelihood} tokens at ${zones.valuePerMinute}/min\n`;
+  output += `🧠 On-Time Zone: ${zones.onTime} tokens\n`;
+  output += `\n🔐 Vault/Goals (PTP): ${tokenCategories.vaultPTP} tokens`;
+  output += `\n🤖 1440X Boost (AI-enhanced): ${tokenCategories.aiBoost} tokens`;
+  output += `\n🛠️ Maintenance: ${tokenCategories.maintenance} tokens`;
+  output += `\n📺 Leisure: ${tokenCategories.leisure} tokens`;
+
+  const totalUtilized = tokenCategories.vaultPTP + tokenCategories.aiBoost + tokenCategories.maintenance + tokenCategories.leisure;
+  const remaining = zones.onTime - totalUtilized;
+
+  output += `\n\n💡 Remaining Tokens Today: ${remaining} (Spend them wisely!)`;
+
+  document.getElementById("output").innerText = output;
+}
+
+dashboard(user);
