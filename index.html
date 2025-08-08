@@ -1,35 +1,202 @@
-// ✅ Fixed Time Expenses (one-tap log)
-const fixedTimePresets = [
-  { label: '+60 Eating / Cooking', minutes: null, description: 'Eating / Cooking', category: 'PT' },
-  { label: '+45 Home Maintenance', minutes: null, description: 'Home Maintenance', category: 'PT' },
-  { label: '+60 Kids / Family Care', minutes: null, description: 'Kids / Family Care', category: 'PT' },
-  { label: '+60 TV / Social Media', minutes: null, description: 'TV / Social Media', category: 'PT' },
-  { label: '+30 Money / Bills', minutes: null, description: 'Money / Bills', category: 'PT' },
-  { label: '+60 Fun Time / Hangout', minutes: null, description: 'Fun Time / Hangout', category: 'PT' }
-];
+<!-- 1440TIME™ Token Allocator (Full Version with $/min, Score, Truth Report) -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>1440TIME™ • On-Time Token Allocator</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" />
+  <style>
+    body {
+      background-color: #121212;
+      color: #f0f0f0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .token-box {
+      background-color: #1e1e1e;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .category-btn { margin: 4px; }
+    .category-badge {
+      font-size: 0.9em;
+      border-radius: 6px;
+      padding: 4px 8px;
+    }
+    .PT { background-color: #2e7d32; color: white; }
+    .PTP { background-color: #00bcd4; color: white; }
+    .Leisure { background-color: #e53935; color: white; }
+    .X1440 { background-color: #9575cd; color: white; }
+    .score-box { margin-top: 10px; }
+    .input-box { margin-top: 15px; }
+  </style>
+</head>
+<body class="container py-4">
+  <h4><strong>1440TIME™ • On-Time Token Allocator</strong></h4>
+  <p class="text-muted">Start fresh every day. Hours for sleep & work — the rest is On-Time (minutes).</p>
 
-// 👇 Add these below your existing quickAdd buttons in the React component:
-{fixedTimePresets.map((item, index) => (
-  <button
-    key={index}
-    className="px-3 py-2 bg-zinc-800 rounded-md hover:bg-zinc-700 text-sm"
-    onClick={() => {
-      setMinutes('');
-      setCategory(item.category);
-      setDescription(item.description);
-    }}
-  >
-    {item.label}
-  </button>
-))}
+  <!-- Sleep, Work, Salary Section -->
+  <div class="token-box">
+    <div class="row g-2">
+      <div class="col-md-4">
+        <label class="form-label">Sleep (hours)</label>
+        <input id="sleepInput" type="number" class="form-control" value="7" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Work (hours, door-to-door)</label>
+        <input id="workInput" type="number" class="form-control" value="9" />
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Annual Salary (optional, $)</label>
+        <input id="salaryInput" type="number" class="form-control" value="200000" />
+      </div>
+    </div>
+    <div class="mt-3">
+      <p><strong>Sleep:</strong> <span id="sleepMin">420</span> min 
+      | <strong>Work:</strong> <span id="workMin">540</span> min 
+      | <strong>On-Time:</strong> <span id="onTimeMin">480</span> min left 
+      | <strong>$ / work min:</strong> <span id="dollarPerMin">$1.48</span></p>
+    </div>
+  </div>
 
-// ✅ Rename the old "Big Rocks (one-tap adds)" header to:
-// "Fixed Time Expenses (one-tap log)"
-<h2 className="text-xl font-bold mb-2">Fixed Time Expenses (one-tap log)</h2>
+  <!-- Fixed Time Expenses -->
+  <div class="token-box">
+    <h5><strong>Fixed Time Expenses (one-tap log)</strong></h5>
+    <div id="fixedTimeButtons"></div>
+    <p class="text-muted">Choose your PT activities. You'll enter minutes below.</p>
+  </div>
 
-// 🧠 Notes:
-// - Leave user input optional under the buttons.
-// - These don’t assign default minutes — user adds that themselves.
-// - Category is pre-selected as PT for these.
+  <!-- Manual Entry Section -->
+  <div class="token-box">
+    <div class="input-group input-box">
+      <input type="number" id="minutesInput" class="form-control" placeholder="Minutes (On-Time)" />
+      <select id="categorySelect" class="form-select">
+        <option value="PT">PT — Power Time (x1)</option>
+        <option value="PTP">PTP — Power Time Plus (x3)</option>
+        <option value="X1440">1440X — Multiplier Zone (x10)</option>
+        <option value="Leisure">Leisure — Escape Time (-1)</option>
+      </select>
+    </div>
+    <input type="text" id="descriptionInput" class="form-control mt-2" placeholder="What did you do? (optional)" />
+    <button class="btn btn-success mt-2" onclick="addEntry()">Add Entry</button>
+    <button class="btn btn-secondary mt-2" onclick="clearEntries()">Clear Entries</button>
+  </div>
 
-// ✅ Keeping everything else as-is for now — minimal and clean.
+  <!-- Token Log and Summary -->
+  <div class="token-box">
+    <h6><strong>Entries</strong></h6>
+    <ul id="entryList" class="list-group"></ul>
+    <p class="mt-3">
+      <span class="PT category-badge">PT: <span id="ptTotal">0</span> min</span>
+      <span class="PTP category-badge">PTP: <span id="ptpTotal">0</span> min</span>
+      <span class="X1440 category-badge">1440X: <span id="x1440Total">0</span> min</span>
+      <span class="Leisure category-badge">Leisure: <span id="leisureTotal">0</span> min</span>
+    </p>
+    <p><strong>Remaining On-Time:</strong> <span id="remainingTime">480</span> min</p>
+    <p><strong>Daily Token Score:</strong> <span id="scoreTotal">0</span></p>
+    <p class="text-success"><strong>Truth Report:</strong> 1440X active. You're compounding minutes with AI. Keep going.</p>
+  </div>
+
+  <script>
+    const fixedTimePresets = [
+      { label: 'Eating / Cooking', description: 'Eating / Cooking', category: 'PT' },
+      { label: 'Home Maintenance', description: 'Home Maintenance', category: 'PT' },
+      { label: 'Kids / Family Care', description: 'Kids / Family Care', category: 'PT' },
+      { label: 'TV / Social Media', description: 'TV / Social Media', category: 'PT' },
+      { label: 'Money / Bills', description: 'Money / Bills', category: 'PT' },
+      { label: 'Fun Time / Hangout', description: 'Fun Time / Hangout', category: 'PT' },
+    ];
+
+    const buttonContainer = document.getElementById('fixedTimeButtons');
+    fixedTimePresets.forEach(item => {
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-outline-light category-btn';
+      btn.textContent = item.label;
+      btn.onclick = () => {
+        document.getElementById('descriptionInput').value = item.description;
+        document.getElementById('categorySelect').value = item.category;
+        document.getElementById('minutesInput').focus();
+      };
+      buttonContainer.appendChild(btn);
+    });
+
+    const ptTotal = document.getElementById('ptTotal');
+    const ptpTotal = document.getElementById('ptpTotal');
+    const x1440Total = document.getElementById('x1440Total');
+    const leisureTotal = document.getElementById('leisureTotal');
+    const remainingTime = document.getElementById('remainingTime');
+    const scoreTotal = document.getElementById('scoreTotal');
+    const entryList = document.getElementById('entryList');
+
+    let totals = { PT: 0, PTP: 0, X1440: 0, Leisure: 0 };
+
+    function calculateRemainingTime() {
+      const totalUsed = totals.PT + totals.PTP + totals.X1440 + totals.Leisure;
+      const base = parseInt(document.getElementById('onTimeMin').textContent);
+      remainingTime.textContent = base - totalUsed;
+    }
+
+    function calculateScore() {
+      const score = totals.PT * 1 + totals.PTP * 3 + totals.X1440 * 10 - totals.Leisure;
+      scoreTotal.textContent = score;
+    }
+
+    function addEntry() {
+      const minutes = parseInt(document.getElementById('minutesInput').value);
+      const category = document.getElementById('categorySelect').value;
+      const desc = document.getElementById('descriptionInput').value || category;
+      if (!minutes || minutes < 0) return;
+
+      totals[category] += minutes;
+      document.getElementById(category.toLowerCase() + 'Total').textContent = totals[category];
+
+      const li = document.createElement('li');
+      li.className = `list-group-item d-flex justify-content-between align-items-center bg-dark text-white`;
+      li.innerHTML = `${minutes} min — ${desc} <span class="badge category-badge ${category}">${category}</span>`;
+      entryList.appendChild(li);
+
+      document.getElementById('minutesInput').value = '';
+      document.getElementById('descriptionInput').value = '';
+
+      calculateRemainingTime();
+      calculateScore();
+    }
+
+    function clearEntries() {
+      totals = { PT: 0, PTP: 0, X1440: 0, Leisure: 0 };
+      ptTotal.textContent = ptpTotal.textContent = x1440Total.textContent = leisureTotal.textContent = scoreTotal.textContent = 0;
+      entryList.innerHTML = '';
+      calculateRemainingTime();
+    }
+
+    // Initial values
+    function updateSalaryMath() {
+      const salary = parseFloat(document.getElementById('salaryInput').value);
+      const workMin = parseInt(document.getElementById('workMin').textContent);
+      if (!salary || !workMin) return;
+      const dpm = (salary / 52 / 5 / workMin).toFixed(2);
+      document.getElementById('dollarPerMin').textContent = `$${dpm}`;
+    }
+
+    function updateTimeBlocks() {
+      const sleep = parseInt(document.getElementById('sleepInput').value) || 0;
+      const work = parseInt(document.getElementById('workInput').value) || 0;
+      const sleepMin = sleep * 60;
+      const workMin = work * 60;
+      const onTime = 1440 - sleepMin - workMin;
+      document.getElementById('sleepMin').textContent = sleepMin;
+      document.getElementById('workMin').textContent = workMin;
+      document.getElementById('onTimeMin').textContent = onTime;
+      updateSalaryMath();
+      calculateRemainingTime();
+    }
+
+    document.getElementById('sleepInput').addEventListener('input', updateTimeBlocks);
+    document.getElementById('workInput').addEventListener('input', updateTimeBlocks);
+    document.getElementById('salaryInput').addEventListener('input', updateSalaryMath);
+
+    updateTimeBlocks();
+  </script>
+</body>
+</html>
